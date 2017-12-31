@@ -7,7 +7,7 @@ import * as wiredep from 'wiredep';
 import * as browserSync from 'browser-sync';
 
 import { config } from './gulp.config';
-import { GulpLoadPlugins, Message } from './interface';
+import { BrowserSyncOptions, GulpLoadPlugins, Message } from './interface';
 
 const args = yargs.argv;
 const $ = gulpLoadPlugins({ lazy: true }) as GulpLoadPlugins;
@@ -40,7 +40,7 @@ gulp.task('styles', ['clean-styles'], () => {
 });
 
 gulp.task('clean-styles', () => {
-  clean(config.tmp + '/**/*.css');
+  return clean(`${config.tmp}/**/*.css`);
 });
 
 gulp.task('less-watcher', () => {
@@ -120,7 +120,7 @@ function startBrowserSync(): any {
   gulp.watch([config.less], ['styles'])
     .on('change', changeEvent);
 
-  const options: browserSync.Options = {
+  const options: BrowserSyncOptions = {
     proxy: `localhost:${port}`,
     port: 3000,
     files: [
@@ -128,6 +128,7 @@ function startBrowserSync(): any {
       `!${config.less}`,
       `${config.tmp}/**/*.css`
     ],
+    watchEvents: ['add', 'change'],
     ghostMode: {
       clicks: true,
       scroll: true,
