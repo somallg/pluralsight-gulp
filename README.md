@@ -22,7 +22,7 @@ $ bower install
 $ npm start
 ```
 
-## Write Gulp Task with TypeScript
+## Write Gulp Task with TypeScript [OPTIONAL]
 
 ## What is TypeScript
 * TypeScript is a superset of JavaScript which primarily provides optional static typing, classes and interfaces.
@@ -68,10 +68,24 @@ yarn gulp
 ```
 * You should see Gulp tasks and `Hello World`
 
-
 ## Gulp API
 * Gulp only have 4 API
   1. gulp.task - Define a task
   2. gulp.src - Read files
   3. gulp.dest - Write the files
   4. gulp.watch - Watch the files
+
+## Code Analysis with JSHint and JSCS
+* Install npm packages locally
+```
+yarn add --dev yargs gulp-load-plugins gulp-if gulp-print jshint-stylish gulp-util
+```
+* Aslo install npm packages for typescript
+```
+yarn add --dev @types/yargs @types/gulp-load-plugins
+```
+* yarns - read options arguments from the commandline
+* gulp-load-plugins - load plugin plugin lazily
+* gulp-if - conditional run gulp pipe line
+* gulp-print - print files being piped
+* gulp-ulti - log and colors to out to console
