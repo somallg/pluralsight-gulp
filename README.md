@@ -22,3 +22,56 @@ $ bower install
 $ npm start
 ```
 
+## Write Gulp Task with TypeScript
+
+## What is TypeScript
+* TypeScript is a superset of JavaScript which primarily provides optional static typing, classes and interfaces.
+* One of the big benefits is to enable IDEs to provide a richer environment for spotting common errors as you type the code.
+  
+## Why TypeScript?
+* Enable IDEs to provide a richer environment for spotting common errors as you type the code.
+* New JavaScript features
+* Types checking
+* Debugging easier
+
+## How to add TypeScript to Gulp Task?
+* Install `typescript` and `ts-node`
+```
+yarn add --dev typescript ts-node
+```
+* Add `tool/gulpfile.ts`
+* Modify `gulpfile.ts` like below
+```js
+require('ts-node').register({
+  typeCheck: true
+});
+require('./tool/gulpfile.ts');
+```
+* Install typed definition for gulp
+```
+yarn add --dev @types/gulp
+```
+* Modify `tool/gulpfile.ts`
+```ts
+import * as gulp from 'gulp';
+
+gulp.task('default', ['hello'], () => {
+});
+
+gulp.task('hello', () => {
+  console.log('Hello World');
+});
+```
+* In terminal at root of your project, run
+```
+yarn gulp
+```
+* You should see Gulp tasks and `Hello World`
+
+
+## Gulp API
+* Gulp only have 4 API
+  1. gulp.task - Define a task
+  2. gulp.src - Read files
+  3. gulp.dest - Write the files
+  4. gulp.watch - Watch the files
