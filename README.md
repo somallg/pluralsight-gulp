@@ -89,3 +89,27 @@ yarn add --dev @types/yargs @types/gulp-load-plugins
 * gulp-if - conditional run gulp pipe line
 * gulp-print - print files being piped
 * gulp-ulti - log and colors to out to console
+
+## CSS Compilation
+* gulp-plumber - handle errors gracefully
+* gulp.on('error', fn) - handle events in this case error events
+* callbacks | Promise - end the stream
+* gulp-less - compile less to css
+* gulp-autoprefixer - add vendor prefixes
+
+## HTML Injection
+* Wiredep and Bower - Inject bower dependencies into HTML
+* gulp-inject - Inject custom dependencies into HTML
+* HTML Injection
+* post install script - Run wiredep after bower install
+
+## Serving Your Dev Build (Server side)
+* Simplify dev process - easier to start and code
+* nodemon - watch for server files and restart
+
+## Keeping Your Browser in Sync (Client side)
+* browser-sync
+  1. Inject changes
+  2. Ghost mode - Sync browsers behaviour such as clicks, forms, scroll
+* Injecting Files - Inject CSS, reload for JavaScript
+* Watches - Prepare code for injection

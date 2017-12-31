@@ -25,14 +25,24 @@
     "serve-favicon": "^2.0.1"
   },
   "devDependencies": {
-    "@types/gulp": "^4.0.5",
+    "@types/browser-sync": "^0.0.38",
+    "@types/del": "^3.0.0",
+    "@types/gulp": "^3.8.0",
     "@types/gulp-load-plugins": "^0.0.31",
+    "@types/wiredep": "^3.0.30",
     "@types/yargs": "^10.0.0",
+    "browser-sync": "^2.23.1",
+    "del": "^3.0.0",
     "gulp": "^3.9.1",
+    "gulp-autoprefixer": "^4.1.0",
     "gulp-if": "^2.0.2",
+    "gulp-inject": "^4.3.0",
     "gulp-jscs": "^4.1.0",
     "gulp-jshint": "^2.1.0",
+    "gulp-less": "^3.4.0",
     "gulp-load-plugins": "^1.5.0",
+    "gulp-nodemon": "^2.2.1",
+    "gulp-plumber": "^1.1.0",
     "gulp-print": "^2.0.1",
     "gulp-util": "^3.0.8",
     "jshint": "^2.9.5",
@@ -41,6 +51,7 @@
     "tslint": "^5.8.0",
     "tslint-config-airbnb": "^5.4.2",
     "typescript": "^2.6.2",
+    "wiredep": "^4.0.0",
     "yargs": "^10.0.3"
   }
 }
