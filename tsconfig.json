@@ -2,9 +2,10 @@
   "compilerOptions": {
     "outDir": "./build/",
     "sourceMap": false,
-    "strictNullChecks": true,
     "noImplicitAny": true,
     "noImplicitThis": true,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
     "alwaysStrict": true,
     "module": "commonjs",
     "target": "es5",
