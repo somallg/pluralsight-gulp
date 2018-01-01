@@ -3,6 +3,7 @@ import bowerJson from '../bower.json';
 const server = './src/server';
 const client = './src/client';
 const clientApp = `${client}/app`;
+const build = './build';
 const tmp = './tmp';
 
 export const config = {
@@ -17,6 +18,7 @@ export const config = {
     './src/**/*.js',
     './*.js'
   ],
+  build: './build',
   index: `${client}/index.html`,
   js: [
     `${clientApp}/**/*.module.js`,
@@ -24,8 +26,24 @@ export const config = {
     `!${clientApp}/**/*.spec.js`
   ],
   css: `${tmp}/styles.css`,
+  fonts: './bower_components/font-awesome/fonts/**/*.*',
+  html: `${clientApp}/**/*.html`,
+  htmlTemplates: `${clientApp}/**/*.html`,
+  images: `${client}/images/**/*.*`,
   less: `${client}/styles/styles.less`,
   source: 'src',
+
+  /**
+   * Template cache
+   */
+  templateCache: {
+    file: 'template.js',
+    options: {
+      module: 'app.core',
+      standAlone: false,
+      root: 'app/'
+    }
+  },
 
   /**
    * Bower and Npm locations

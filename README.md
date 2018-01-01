@@ -113,3 +113,29 @@ yarn add --dev @types/yargs @types/gulp-load-plugins
   2. Ghost mode - Sync browsers behaviour such as clicks, forms, scroll
 * Injecting Files - Inject CSS, reload for JavaScript
 * Watches - Prepare code for injection
+
+## Build Assests and Keeping Organized
+* gulp.src --> gulp.desc - built-in copy, great for creating build folder
+* gulp-task-listing - list all task great for default help task
+* gulp-imagemin - image compression
+
+## Caching HTML Templates
+* Inject HTML templates into js code to reduce HTTP requests
+
+## Creating a Production Build Pipeline
+* gulp-useref - gather the assets in the index.html
+  1. Parses HTML comments
+  2. Similar to gulp-inject
+  3. Concatenates by default
+  4. Replaces script tags
+  5. New optimized files
+* gulp-useref API
+  1. useref.assets() - gather assets from the HTML comments
+  2. useref.restore() - restore the files to the stream
+  3. useref() -  concatenate files
+
+## Minifying and Filtering
+* gulp-filter - Filter and restore stream
+* gulp-csso - Minify CSS
+* gulp-uglify - Minify JavaScript
+

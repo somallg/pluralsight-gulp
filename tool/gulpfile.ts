@@ -13,7 +13,9 @@ const args = yargs.argv;
 const $ = gulpLoadPlugins({ lazy: true }) as GulpLoadPlugins;
 const port = process.env.PORT || config.defaultPort;
 
-gulp.task('default', ['hello'], () => {
+gulp.task('list', $.taskListing);
+
+gulp.task('default', ['list'], () => {
 });
 
 gulp.task('vet', () => {
@@ -39,12 +41,60 @@ gulp.task('styles', ['clean-styles'], () => {
     .pipe<ReadWriteStream>(gulp.dest(config.tmp));
 });
 
+gulp.task('fonts', ['clean-fonts'], () => {
+  log('Copying fonts');
+
+  return gulp.src(config.fonts)
+    .pipe<ReadWriteStream>(gulp.dest(`${config.build}/fonts`));
+});
+
+gulp.task('images', ['clean-images'], () => {
+  log('Copying and compressing images');
+
+  return gulp.src(config.images)
+    .pipe<ReadWriteStream>($.imagemin({ optimizationLevel: 4 }))
+    .pipe<ReadWriteStream>(gulp.dest(`${config.build}/images`));
+});
+
+gulp.task('clean', () => {
+  const delConfig = [config.build, config.tmp];
+  return clean(delConfig);
+});
+
+gulp.task('clean-code', () => {
+  const delConfig = [
+    `${config.tmp}/**/*.js`,
+    `${config.build}/**/*.html`,
+    `${config.build}/js/**/*.js`,
+  ];
+  return clean(delConfig);
+});
+
+gulp.task('clean-fonts', () => {
+  return clean(`${config.build}/fonts/**/*.*`);
+});
+
+gulp.task('clean-images', () => {
+  return clean(`${config.build}/images/**/*.*`);
+});
+
 gulp.task('clean-styles', () => {
   return clean(`${config.tmp}/**/*.css`);
 });
 
 gulp.task('less-watcher', () => {
   gulp.watch([config.less], ['styles']);
+});
+
+gulp.task('templatecache', ['clean-code'], () => {
+  return gulp.src(config.htmlTemplates)
+    .pipe<ReadWriteStream>($.minifyHtml({ empty: true }))
+    .pipe<ReadWriteStream>($.angularTemplatecache(
+      config.templateCache.file,
+      config.templateCache.options
+    ))
+    .pipe<ReadWriteStream>(gulp.dest(config.tmp));
+
 });
 
 gulp.task('wiredep', () => {
@@ -56,7 +106,7 @@ gulp.task('wiredep', () => {
     .pipe<ReadWriteStream>(gulp.dest(config.client));
 });
 
-gulp.task('inject', ['wiredep', 'styles'],  () => {
+gulp.task('inject', ['wiredep', 'styles', 'templatecache'],  () => {
   log('Wire up the app css into the html, after call wiredep');
 
   return gulp.src(config.index)
@@ -64,8 +114,46 @@ gulp.task('inject', ['wiredep', 'styles'],  () => {
     .pipe<ReadWriteStream>(gulp.dest(config.client));
 });
 
+gulp.task('optimize', ['inject', 'fonts', 'images'], () => {
+  log('Optimizing the javascript, css, html');
+
+  const assets = $.useref.assets({ searchPath: './' });
+  const templateCache = `${config.tmp}/${config.templateCache.file}`;
+  const cssFilter = $.filter('**/*.css', { restore: true });
+  const jsFilter = $.filter('**/*.js', { restore: true });
+
+  return gulp.src(config.index)
+    .pipe<ReadWriteStream>($.plumber())
+    .pipe<ReadWriteStream>($.inject(
+      gulp.src(templateCache, { read: false }),
+      { starttag: '<!-- inject:templates:js -->' }))
+    .pipe<ReadWriteStream>(assets)
+    .pipe<ReadWriteStream>(cssFilter)
+    .pipe<ReadWriteStream>($.csso())
+    .pipe<ReadWriteStream>(cssFilter.restore)
+    .pipe<ReadWriteStream>(jsFilter)
+    .pipe<ReadWriteStream>($.uglify())
+    .pipe<ReadWriteStream>(jsFilter.restore)
+    .pipe<ReadWriteStream>(assets.restore())
+    .pipe<ReadWriteStream>($.useref())
+    .pipe<ReadWriteStream>(gulp.dest(config.build));
+});
+
+gulp.task('serve-build', ['optimize'], () => {
+  serve(false);
+});
+
 gulp.task('serve-dev', ['inject'], () => {
-  const isDev = true;
+  serve(true);
+});
+
+gulp.task('hello', () => {
+  console.log('Hello World');
+});
+
+/////////////
+
+function serve(isDev: boolean) {
   const nodeOptions = {
     script: config.nodeServer,
     delayTime: 1,
@@ -90,7 +178,7 @@ gulp.task('serve-dev', ['inject'], () => {
     })
     .on('start', () => {
       log('*** nodemon started ***');
-      startBrowserSync();
+      startBrowserSync(isDev);
     })
     .on('crash', () => {
       log('*** nodemon crashed ***');
@@ -98,36 +186,35 @@ gulp.task('serve-dev', ['inject'], () => {
     .on('exit', () => {
       log('*** nodemon exit ***');
     });
-});
-
-gulp.task('hello', () => {
-  console.log('Hello World');
-});
-
-/////////////
+}
 
 function changeEvent(event: gulp.WatchEvent) {
   const srcPattern = new RegExp(`/.*(?=/${config.source})/`);
   log('File ' + event.path.replace(srcPattern, '') + ' ' + event.type);
 }
 
-function startBrowserSync(): any {
+function startBrowserSync(isDev: boolean): any {
   if (args.nosync || browserSync.active) {
     return;
   }
   log('Start browser sync');
 
-  gulp.watch([config.less], ['styles'])
-    .on('change', changeEvent);
+  if (isDev) {
+    gulp.watch([config.less], ['styles'])
+      .on('change', changeEvent);
+  } else {
+    gulp.watch([config.less, ...config.js, config.html], ['optimize', browserSync.reload])
+      .on('change', changeEvent);
+  }
 
   const options: BrowserSyncOptions = {
     proxy: `localhost:${port}`,
     port: 3000,
-    files: [
+    files: isDev ? [
       `${config.client}/**/*.*`,
       `!${config.less}`,
       `${config.tmp}/**/*.css`
-    ],
+    ] : [],
     watchEvents: ['add', 'change'],
     ghostMode: {
       clicks: true,
@@ -145,7 +232,7 @@ function startBrowserSync(): any {
   return browserSync(options);
 }
 
-function clean(path: string): Promise<string[]> {
+function clean(path: string | string[]): Promise<string[]> {
   log(`Cleaning: ${$.util.colors.blue(path)}`);
   return del(path);
 }
