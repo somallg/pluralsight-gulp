@@ -139,3 +139,15 @@ yarn add --dev @types/yargs @types/gulp-load-plugins
 * gulp-csso - Minify CSS
 * gulp-uglify - Minify JavaScript
 
+## Angular Dependency Injections
+* mangling - reduce file size
+* gulp-ng-annotate - add Angular injections
+* `/* @ngInject */` - provide code hints
+
+## Static Asset Revisions and Version Bumping
+* gulp-rev - rename based on content hash
+* gulp-rev-replace - replace
+* gulp-bump - increase version
+
+## Testing
+* 

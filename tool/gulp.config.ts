@@ -5,11 +5,13 @@ const client = './src/client';
 const clientApp = `${client}/app`;
 const build = './build';
 const tmp = './tmp';
+const root = '.';
 
 export const config = {
   server,
   client,
   tmp,
+  root,
   /**
    * Files path
    */
@@ -34,6 +36,14 @@ export const config = {
   source: 'src',
 
   /**
+   * Optimize files
+   */
+  optimized: {
+    lib: 'lib.js',
+    app: 'app.js'
+  },
+
+  /**
    * Template cache
    */
   templateCache: {
@@ -44,6 +54,19 @@ export const config = {
       root: 'app/'
     }
   },
+
+  /**
+   * Bump version
+   */
+  packages: [
+    './package.json',
+    './bower.json'
+  ],
+
+  /**
+   * Server integration specs
+   */
+  serverIntegrationSpecs: [`${client}/tests/server-integration/**/*.spec.js`],
 
   /**
    * Bower and Npm locations

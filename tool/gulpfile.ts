@@ -1,10 +1,12 @@
 import ReadWriteStream = NodeJS.ReadWriteStream;
+import * as path from 'path';
 import * as gulp from 'gulp';
 import * as yargs from 'yargs';
 import * as gulpLoadPlugins from 'gulp-load-plugins';
 import * as del from 'del';
 import * as wiredep from 'wiredep';
 import * as browserSync from 'browser-sync';
+import * as karma from 'karma';
 
 import { config } from './gulp.config';
 import { BrowserSyncOptions, GulpLoadPlugins, Message } from './interface';
@@ -120,7 +122,8 @@ gulp.task('optimize', ['inject', 'fonts', 'images'], () => {
   const assets = $.useref.assets({ searchPath: './' });
   const templateCache = `${config.tmp}/${config.templateCache.file}`;
   const cssFilter = $.filter('**/*.css', { restore: true });
-  const jsFilter = $.filter('**/*.js', { restore: true });
+  const jsLibFilter = $.filter(`**/${config.optimized.lib}`, { restore: true });
+  const jsAppFilter = $.filter(`**/${config.optimized.app}`, { restore: true });
 
   return gulp.src(config.index)
     .pipe<ReadWriteStream>($.plumber())
@@ -131,12 +134,51 @@ gulp.task('optimize', ['inject', 'fonts', 'images'], () => {
     .pipe<ReadWriteStream>(cssFilter)
     .pipe<ReadWriteStream>($.csso())
     .pipe<ReadWriteStream>(cssFilter.restore)
-    .pipe<ReadWriteStream>(jsFilter)
+    .pipe<ReadWriteStream>(jsLibFilter)
     .pipe<ReadWriteStream>($.uglify())
-    .pipe<ReadWriteStream>(jsFilter.restore)
+    .pipe<ReadWriteStream>(jsLibFilter.restore)
+    .pipe<ReadWriteStream>(jsAppFilter)
+    .pipe<ReadWriteStream>($.ngAnnotate())
+    .pipe<ReadWriteStream>($.uglify())
+    .pipe<ReadWriteStream>(jsAppFilter.restore)
+    .pipe<ReadWriteStream>($.rev())
     .pipe<ReadWriteStream>(assets.restore())
     .pipe<ReadWriteStream>($.useref())
+    .pipe<ReadWriteStream>($.revReplace())
+    .pipe<ReadWriteStream>(gulp.dest(config.build))
+    .pipe<ReadWriteStream>($.rev.manifest())
     .pipe<ReadWriteStream>(gulp.dest(config.build));
+});
+
+/**
+ * Bump version
+ * --type=minor|major|patch
+ * --versions=1.2.3 will bump to a specific version and ignore other flags
+ */
+gulp.task('bump', () => {
+  const { type, versions } = args;
+  let options = {};
+  let msg = 'Bumping versions';
+
+  if (versions) {
+    options = {
+      ...options,
+      versions
+    };
+    msg = `${msg} to ${versions}`;
+  } else {
+    options = {
+      ...options,
+      type
+    };
+    msg = `${msg} for a ${type}`;
+  }
+  log(msg);
+
+  return gulp.src(config.packages)
+    .pipe<ReadWriteStream>($.print())
+    .pipe<ReadWriteStream>($.bump(options))
+    .pipe<ReadWriteStream>(gulp.dest(config.root));
 });
 
 gulp.task('serve-build', ['optimize'], () => {
@@ -151,6 +193,9 @@ gulp.task('hello', () => {
   console.log('Hello World');
 });
 
+gulp.task('test', ['vet', 'templatecache'], (done) => {
+  startTests(true, done);
+});
 /////////////
 
 function serve(isDev: boolean) {
@@ -230,6 +275,30 @@ function startBrowserSync(isDev: boolean): any {
   };
 
   return browserSync(options);
+}
+
+function startTests(singleRun: boolean, done: Function) {
+  let excludeFiles = [];
+  const serverSpec = config.serverIntegrationSpecs;
+
+  excludeFiles = serverSpec;
+
+  new karma.Server(
+    {
+      configFile: path.join(__dirname, '..', 'karma.conf.js'),
+      exclude: excludeFiles,
+      singleRun: Boolean(singleRun)
+    },
+    karmaCompleted).start();
+
+  function karmaCompleted(karmaResult: any) {
+    log('*** Karma completed! ***');
+    if (karmaResult === 1) {
+      done(`karma: tests failed with code ${karmaResult}`);
+    } else {
+      done();
+    }
+  }
 }
 
 function clean(path: string | string[]): Promise<string[]> {
